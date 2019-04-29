@@ -7,5 +7,5 @@
 	},
 	"supportedOS":	"windows",
 	"editEnabled":	true,
-	"sourcewindows":	"RobinCPP.vcxproj"
+	"sourcewindows":	"LaserJoints.vcxproj"
 }
