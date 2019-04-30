@@ -6,17 +6,20 @@
 using namespace adsk::core;
 using namespace adsk::fusion;
 
-class TriplerExecuteEventHander :
+const std::string thicknessOuter = "thickness_outer";
+const std::string thicknessInner = "thickness_inner";
+
+class TriplerExecuteEventHandler :
 	public adsk::core::CommandEventHandler
 {
 public:
 	//const static char* colorNames[];
 	static const std::vector<std::string> colorNames;
-	TriplerExecuteEventHander();
-	~TriplerExecuteEventHander();
+	TriplerExecuteEventHandler();
+	~TriplerExecuteEventHandler();
 	void notify(const Ptr<CommandEventArgs>& eventArgs) override;
 
-private:
+protected:
 
 	Ptr<Application> app;
 	Ptr<UserInterface> ui;
@@ -24,7 +27,9 @@ private:
 	Ptr<Design> design;
 	Ptr<adsk::fusion::UserParameters> params;
 
+	bool setLinkages();
 	void ensureParams();
+
 	void tripleProfile(Ptr<Profile> profile, int extrudeDir);
 
 	Ptr<adsk::fusion::UserParameter> addOrGetParam(

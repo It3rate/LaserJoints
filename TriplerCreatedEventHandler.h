@@ -2,9 +2,11 @@
 
 #include <Core/CoreAll.h>
 #include <Fusion/FusionAll.h>
-#include "TriplerExecuteEventHander.h"
+#include "TriplerValidateEventHandler.h"
+#include "TriplerPreviewEventHandler.h"
+#include "TriplerExecuteEventHandler.h"
 #include "TriplerDestroyEventHandler.h"
-#include "TriplerInputChangedEventHander.h"
+#include "TriplerInputChangedEventHandler.h"
 
 using namespace adsk::core;
 using namespace adsk::fusion;
@@ -18,9 +20,11 @@ public:
 
 	void notify(const Ptr<CommandCreatedEventArgs>& eventArgs) override;
 private:
-	TriplerExecuteEventHander onExecuteHandler;
+	TriplerValidateEventHandler onValidateHandler;
+	TriplerPreviewEventHandler onPreviewHandler;
+	TriplerExecuteEventHandler onExecuteHandler;
 	TriplerDestroyEventHandler onDestroyHandler;
-	TriplerInputChangedEventHander onInputChangedHandler;
+	TriplerInputChangedEventHandler onInputChangedHandler;
 
 	void createUI(Ptr<CommandInputs> inputs);
 };

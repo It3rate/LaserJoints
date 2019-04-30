@@ -16,10 +16,26 @@ void TriplerCreatedEventHandler::notify(const Ptr<CommandCreatedEventArgs>& even
 			return;
 		Ptr<Command> command = eventArgs->command();
 
+		bool isOk;
+
+		Ptr<ValidateInputsEvent> onValidate = command->validateInputs();
+		if (!onValidate)
+			return;
+		isOk = onValidate->add(&onValidateHandler);
+		if (!isOk)
+			return;
+
+		Ptr<CommandEvent> onPreview = command->executePreview();
+		if (!onPreview)
+			return;
+		isOk = onPreview->add(&onPreviewHandler);
+		if (!isOk)
+			return;
+
 		Ptr<CommandEvent> onExecute = command->execute();
 		if (!onExecute)
 			return;
-		bool isOk = onExecute->add(&onExecuteHandler);
+		isOk = onExecute->add(&onExecuteHandler);
 		if (!isOk)
 			return;
 
@@ -50,6 +66,7 @@ void TriplerCreatedEventHandler::createUI(Ptr<CommandInputs> inputs)
 	// Female
 	auto selectionInputFemale = inputs->addSelectionInput("selectionFemale", "Female Profile", "Select target side.");
 	selectionInputFemale->addSelectionFilter("Profiles");
+	//selectionInputFemale->setSelectionLimits(0, 5);
 
 	Ptr<ButtonRowCommandInput> femaleDirectionInput = inputs->addButtonRowCommandInput("femaleDirection", "Extrude Direction", false);
 	if (!femaleDirectionInput)

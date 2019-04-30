@@ -98,8 +98,10 @@
     </ClCompile>
     <ClCompile Include="TriplerCreatedEventHandler.cpp" />
     <ClCompile Include="TriplerDestroyEventHandler.cpp" />
-    <ClCompile Include="TriplerExecuteEventHander.cpp" />
-    <ClCompile Include="TriplerInputChangedEventHander.cpp" />
+    <ClCompile Include="TriplerExecuteEventHandler.cpp" />
+    <ClCompile Include="TriplerInputChangedEventHandler.cpp" />
+    <ClCompile Include="TriplerPreviewEventHandler.cpp" />
+    <ClCompile Include="TriplerValidateEventHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="LaserJoints.manifest">
@@ -110,8 +112,10 @@
   <ItemGroup>
     <ClInclude Include="TriplerCreatedEventHandler.h" />
     <ClInclude Include="TriplerDestroyEventHandler.h" />
-    <ClInclude Include="TriplerExecuteEventHander.h" />
-    <ClInclude Include="TriplerInputChangedEventHander.h" />
+    <ClInclude Include="TriplerExecuteEventHandler.h" />
+    <ClInclude Include="TriplerInputChangedEventHandler.h" />
+    <ClInclude Include="TriplerPreviewEventHandler.h" />
+    <ClInclude Include="TriplerValidateEventHandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

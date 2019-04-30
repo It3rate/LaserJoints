@@ -1,17 +1,17 @@
-#include "TriplerInputChangedEventHander.h"
+#include "TriplerInputChangedEventHandler.h"
 
 
 
-TriplerInputChangedEventHander::TriplerInputChangedEventHander()
+TriplerInputChangedEventHandler::TriplerInputChangedEventHandler()
 {
 }
 
 
-TriplerInputChangedEventHander::~TriplerInputChangedEventHander()
+TriplerInputChangedEventHandler::~TriplerInputChangedEventHandler()
 {
 }
 
-void TriplerInputChangedEventHander::notify(const Ptr<InputChangedEventArgs>& eventArgs)
+void TriplerInputChangedEventHandler::notify(const Ptr<InputChangedEventArgs>& eventArgs)
 {
 
 	Ptr<UserInterface> ui = Application::get()->userInterface();

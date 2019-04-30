@@ -6,12 +6,12 @@
 using namespace adsk::core;
 using namespace adsk::fusion;
 
-class TriplerInputChangedEventHander :
+class TriplerInputChangedEventHandler :
 	public adsk::core::InputChangedEventHandler
 {
 public:
-	TriplerInputChangedEventHander();
-	~TriplerInputChangedEventHander();
+	TriplerInputChangedEventHandler();
+	~TriplerInputChangedEventHandler();
 	void notify(const Ptr<InputChangedEventArgs>& eventArgs) override;
 };
 

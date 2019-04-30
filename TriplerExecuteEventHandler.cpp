@@ -1,66 +1,88 @@
-#include "TriplerExecuteEventHander.h"
+#include "TriplerExecuteEventHandler.h"
 
-const std::vector<std::string> TriplerExecuteEventHander::colorNames = std::vector<std::string>({ "Yellow", "Red", "Blue", "White" });
-const std::string outer = "thickness_outer";
-const std::string inner = "thickness_inner";
+const std::vector<std::string> TriplerExecuteEventHandler::colorNames = std::vector<std::string>({ "Yellow", "Red", "Blue", "White" });
 
-TriplerExecuteEventHander::TriplerExecuteEventHander()
+TriplerExecuteEventHandler::TriplerExecuteEventHandler()
 {
 }
 
-
-TriplerExecuteEventHander::~TriplerExecuteEventHander()
+TriplerExecuteEventHandler::~TriplerExecuteEventHandler()
 {
 }
 
-void TriplerExecuteEventHander::notify(const Ptr<CommandEventArgs>& eventArgs)
+bool TriplerExecuteEventHandler::setLinkages()
 {
 	app = Application::get();
 	if (!app)
-		return;
+		return false;
 
 	ui = app->userInterface();
 	if (!ui)
-		return;
+		return false;
 
 	product = app->activeProduct();
 	if (!product)
-		return;
+		return false;
 
 	design = product;
 	if (!design)
-		return;
+		return false;
 
 	params = design->userParameters();
 	if (!params)
-		return;
+		return false;
 
-	ensureParams();
+	return true;
+}
+
+void TriplerExecuteEventHandler::notify(const Ptr<CommandEventArgs>& eventArgs)
+{
+	if (!setLinkages()) {
+		return;
+	}
 
 	auto inputs = eventArgs->command()->commandInputs();
+	ensureParams();
+
 	Ptr<SelectionCommandInput> femaleSel = inputs->itemById("selectionFemale");
-	Ptr<Profile> femaleProfile = femaleSel->selection(0)->entity();
 	Ptr<SelectionCommandInput> maleSel = inputs->itemById("selectionMale");
-	Ptr<Profile> maleProfile = maleSel->selection(0)->entity();
+	Ptr<Profile> profile0;
+	int extrudeDir0;
+	Ptr<Profile> profile1;
+	int extrudeDir1;
+	if (femaleSel)
+	{
+		profile0 = femaleSel->selection(0)->entity();
+		Ptr<ButtonRowCommandInput> extendDirectionInput = inputs->itemById("femaleDirection");
+		extrudeDir0 = extendDirectionInput->selectedItem()->index(); // 0 Pos, 1 Cent, 2 Neg
+		extrudeDir0 = (extrudeDir0 - 1) * -1; // 1 Pos, 0 Cent, -1 Neg
+	}
 
-	Ptr<ButtonRowCommandInput> extendDirectionInput = inputs->itemById("femaleDirection");
-	int extrudeDir = extendDirectionInput->selectedItem()->index(); // 0 Pos, 1 Cent, 2 Neg
-	extrudeDir = (extrudeDir - 1) * -1; // 1 Pos, 0 Cent, -1 Neg
-	tripleProfile(femaleProfile, extrudeDir);
+	if (maleSel)
+	{
+		profile1 = maleSel->selection(0)->entity();
+		Ptr<ButtonRowCommandInput> extendDirectionInput = inputs->itemById("maleDirection");
+		extrudeDir1 = extendDirectionInput->selectedItem()->index(); // 0 Pos, 1 Cent, 2 Neg
+		extrudeDir1 = (extrudeDir1 - 1) * -1; // 1 Pos, 0 Cent, -1 Neg
+	}
 
-	extendDirectionInput = inputs->itemById("maleDirection");
-	extrudeDir = extendDirectionInput->selectedItem()->index(); // 0 Pos, 1 Cent, 2 Neg
-	extrudeDir = (extrudeDir - 1) * -1; // 1 Pos, 0 Cent, -1 Neg
-	tripleProfile(maleProfile, extrudeDir);
+	if (femaleSel)
+	{
+		tripleProfile(profile0, extrudeDir0);
+	}
+	if (maleSel)
+	{
+		tripleProfile(profile1, extrudeDir1);
+	}
 }
 
-void TriplerExecuteEventHander::ensureParams()
+void TriplerExecuteEventHandler::ensureParams()
 {
-	Ptr<adsk::fusion::UserParameter> outerExpr = addOrGetParam(outer, "2 mm");
-	Ptr<adsk::fusion::UserParameter> innerExpr = addOrGetParam(inner, "3 mm");
+	Ptr<adsk::fusion::UserParameter> outerExpr = addOrGetParam(thicknessOuter, "2 mm");
+	Ptr<adsk::fusion::UserParameter> innerExpr = addOrGetParam(thicknessInner, "3 mm");
 }
 
-void TriplerExecuteEventHander::tripleProfile(Ptr<Profile> profile, int extrudeDir)
+void TriplerExecuteEventHandler::tripleProfile(Ptr<Profile> profile, int extrudeDir)
 {
 	design->activateRootComponent();
 	auto rootComponent = design->rootComponent();
@@ -68,21 +90,23 @@ void TriplerExecuteEventHander::tripleProfile(Ptr<Profile> profile, int extrudeD
 	auto newComponent = rootComponent->occurrences()->addNewComponent(ident);
 	newComponent->activate();
 
-	std::string start = (extrudeDir == 0) ? "-(" + outer + " + " + inner + " / 2)" : "0";
-	std::string dist = (extrudeDir == -1) ? "-" + outer : outer;
+	std::string start = (extrudeDir == 0) ? "-(" + thicknessOuter + " + " + thicknessInner + " / 2)" : "0";
+	std::string dist = (extrudeDir == -1) ? "-" + thicknessOuter : thicknessOuter;
 	auto extrude0 = this->extrudeBody(newComponent, profile, start, dist, 0);
 
-	start = (extrudeDir == -1) ? "-" + outer : (extrudeDir == 0) ? "-" + inner + " / 2" : outer;
-	dist = (extrudeDir == -1) ? "-" + inner : inner;
+	start = (extrudeDir == -1) ? "-" + thicknessOuter : 
+		(extrudeDir == 0) ? "-" + thicknessInner + " / 2" : thicknessOuter;
+	dist = (extrudeDir == -1) ? "-" + thicknessInner : thicknessInner;
 	auto extrude1 = this->extrudeBody(newComponent, profile, start, dist, 1);
 
-	start = (extrudeDir == -1) ? "-(" + outer + " + " + inner + ")" : (extrudeDir == 0) ? inner + " / 2" : outer + " + " + inner;
-	dist = (extrudeDir == -1) ? "-" + outer : outer;
+	start = (extrudeDir == -1) ? "-(" + thicknessOuter + " + " + thicknessInner + ")" : 
+		(extrudeDir == 0) ? thicknessInner + " / 2" : thicknessOuter + " + " + thicknessInner;
+	dist = (extrudeDir == -1) ? "-" + thicknessOuter : thicknessOuter;
 	auto extrude2 = this->extrudeBody(newComponent, profile, start, dist, 2);
 
 	design->activateRootComponent();
 }
-Ptr<adsk::fusion::UserParameter> TriplerExecuteEventHander::addOrGetParam(
+Ptr<adsk::fusion::UserParameter> TriplerExecuteEventHandler::addOrGetParam(
 	std::string name, 
 	std::string defaultExpression)
 {
@@ -94,7 +118,7 @@ Ptr<adsk::fusion::UserParameter> TriplerExecuteEventHander::addOrGetParam(
 	return param;
 }
 
-Ptr<adsk::fusion::ExtrudeFeature> TriplerExecuteEventHander::extrudeBody(
+Ptr<adsk::fusion::ExtrudeFeature> TriplerExecuteEventHandler::extrudeBody(
 	Ptr<adsk::fusion::Occurrence> occurance,
 	Ptr<adsk::fusion::Profile> profile,
 	std::string start,
@@ -127,7 +151,7 @@ Ptr<adsk::fusion::ExtrudeFeature> TriplerExecuteEventHander::extrudeBody(
 	return extrude;
 }
 
-Ptr<adsk::core::Appearance> TriplerExecuteEventHander::addAppearance(
+Ptr<adsk::core::Appearance> TriplerExecuteEventHandler::addAppearance(
 	Ptr<BRepBody> body,
 	int colorIndex)
 {
