@@ -35,41 +35,23 @@ void TriplerExecuteEventHander::notify(const Ptr<CommandEventArgs>& eventArgs)
 	if (!params)
 		return;
 
-	//ui->activeSelections()->clear();
-	while (ui->activeSelections()->count() < 2)
-	{
-		auto sel = ui->selectEntity("Select a Profile.", "Profiles");
-		if (sel)
-		{
-			ui->activeSelections()->add(sel);
-		}
-	}
+	ensureParams();
 
-	//Ptr<Selection> sel;
-	//if (ui->activeSelections()->count() > 0 &&
-	//	ui->activeSelections()->item(0)->entity()->objectType() == adsk::fusion::Profile::classType())
-	//{
-	//	sel = ui->activeSelections()->item(0);
-	//}
-	//else
-	//{
-	//	sel = ui->selectEntity("Select a Profile.", "Profiles");
-	//}
+	auto inputs = eventArgs->command()->commandInputs();
+	Ptr<SelectionCommandInput> femaleSel = inputs->itemById("selectionFemale");
+	Ptr<Profile> femaleProfile = femaleSel->selection(0)->entity();
+	Ptr<SelectionCommandInput> maleSel = inputs->itemById("selectionMale");
+	Ptr<Profile> maleProfile = maleSel->selection(0)->entity();
 
-	if (ui->activeSelections()->count() > 1)
-	{
-		ensureParams();
-		Ptr<Profile> profile0 = ui->activeSelections()->item(0)->entity();
-		Ptr<Profile> profile1 = ui->activeSelections()->item(1)->entity();
-		//Ptr<Profile> profile = sel->entity();
-		tripleProfile(profile0);
-		tripleProfile(profile1);
-	}
-	else
-	{
-		ui->messageBox("no selection");
-	}
-	//adsk::terminate();
+	Ptr<ButtonRowCommandInput> extendDirectionInput = inputs->itemById("femaleDirection");
+	int extrudeDir = extendDirectionInput->selectedItem()->index(); // 0 Pos, 1 Cent, 2 Neg
+	extrudeDir = (extrudeDir - 1) * -1; // 1 Pos, 0 Cent, -1 Neg
+	tripleProfile(femaleProfile, extrudeDir);
+
+	extendDirectionInput = inputs->itemById("maleDirection");
+	extrudeDir = extendDirectionInput->selectedItem()->index(); // 0 Pos, 1 Cent, 2 Neg
+	extrudeDir = (extrudeDir - 1) * -1; // 1 Pos, 0 Cent, -1 Neg
+	tripleProfile(maleProfile, extrudeDir);
 }
 
 void TriplerExecuteEventHander::ensureParams()
@@ -78,7 +60,7 @@ void TriplerExecuteEventHander::ensureParams()
 	Ptr<adsk::fusion::UserParameter> innerExpr = addOrGetParam(inner, "3 mm");
 }
 
-void TriplerExecuteEventHander::tripleProfile(Ptr<Profile> profile)
+void TriplerExecuteEventHander::tripleProfile(Ptr<Profile> profile, int extrudeDir)
 {
 	design->activateRootComponent();
 	auto rootComponent = design->rootComponent();
@@ -86,9 +68,17 @@ void TriplerExecuteEventHander::tripleProfile(Ptr<Profile> profile)
 	auto newComponent = rootComponent->occurrences()->addNewComponent(ident);
 	newComponent->activate();
 
-	auto extrude0 = this->extrudeBody(newComponent, profile, "0", outer, 0);
-	auto extrude1 = this->extrudeBody(newComponent, profile, outer, inner, 1);
-	auto extrude2 = this->extrudeBody(newComponent, profile, outer + " + " + inner, outer, 2);
+	std::string start = (extrudeDir == 0) ? "-(" + outer + " + " + inner + " / 2)" : "0";
+	std::string dist = (extrudeDir == -1) ? "-" + outer : outer;
+	auto extrude0 = this->extrudeBody(newComponent, profile, start, dist, 0);
+
+	start = (extrudeDir == -1) ? "-" + outer : (extrudeDir == 0) ? "-" + inner + " / 2" : outer;
+	dist = (extrudeDir == -1) ? "-" + inner : inner;
+	auto extrude1 = this->extrudeBody(newComponent, profile, start, dist, 1);
+
+	start = (extrudeDir == -1) ? "-(" + outer + " + " + inner + ")" : (extrudeDir == 0) ? inner + " / 2" : outer + " + " + inner;
+	dist = (extrudeDir == -1) ? "-" + outer : outer;
+	auto extrude2 = this->extrudeBody(newComponent, profile, start, dist, 2);
 
 	design->activateRootComponent();
 }

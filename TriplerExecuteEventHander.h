@@ -25,7 +25,7 @@ private:
 	Ptr<adsk::fusion::UserParameters> params;
 
 	void ensureParams();
-	void tripleProfile(Ptr<Profile> profile);
+	void tripleProfile(Ptr<Profile> profile, int extrudeDir);
 
 	Ptr<adsk::fusion::UserParameter> addOrGetParam(
 		std::string name,

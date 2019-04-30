@@ -26,7 +26,7 @@ extern "C" XI_EXPORT bool run(const char* context)
 	if (!ui)
 		return false;
 
-	const std::string commandName = "Three Layer Gen";
+	const std::string commandName = "Laser Joints";
 	const std::string commandDescription = "Makes three layers based on param values.";
 
 	Ptr<CommandDefinitions> commandDefinitions = ui->commandDefinitions();
@@ -84,7 +84,7 @@ extern "C" XI_EXPORT bool run(const char* context)
 	}
 
 	//ui->messageBox("start");
-	adsk::autoTerminate(false);
+	//adsk::autoTerminate(false);
 	return true;
 }
 

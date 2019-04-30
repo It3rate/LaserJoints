@@ -21,5 +21,7 @@ private:
 	TriplerExecuteEventHander onExecuteHandler;
 	TriplerDestroyEventHandler onDestroyHandler;
 	TriplerInputChangedEventHander onInputChangedHandler;
+
+	void createUI(Ptr<CommandInputs> inputs);
 };
 
