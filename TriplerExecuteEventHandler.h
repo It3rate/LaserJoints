@@ -8,6 +8,9 @@ using namespace adsk::fusion;
 
 const std::string thicknessOuter = "thickness_outer";
 const std::string thicknessInner = "thickness_inner";
+const std::string grip = "grip";
+const std::string snap = "snap";
+const std::string kerf = "kerf";
 
 class TriplerExecuteEventHandler :
 	public adsk::core::CommandEventHandler
@@ -30,7 +33,7 @@ protected:
 	bool setLinkages();
 	void ensureParams();
 
-	void tripleProfile(Ptr<Profile> profile, int extrudeDir);
+	std::vector<Ptr<ExtrudeFeature>> tripleProfile(Ptr<Profile> profile, int extrudeDir);
 
 	Ptr<adsk::fusion::UserParameter> addOrGetParam(
 		std::string name,
@@ -42,6 +45,10 @@ protected:
 		std::string start,
 		std::string distance,
 		int colorIndex);
+
+	void cutNotch(
+		Ptr<ExtrudeFeature> extrude,
+		Ptr<Profile> perpendicular);
 
 	Ptr<adsk::core::Appearance> addAppearance(
 		Ptr<BRepBody> body,
